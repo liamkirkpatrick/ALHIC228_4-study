@@ -36,6 +36,10 @@ IC = pd.read_csv(path_to_data+'IC/IC_firstpass.csv',header=[0],index_col=[0])
 # Import ICMPS data
 ICPMS = pd.read_csv(path_to_data+'ICPMS/ICPMS.csv',header=[0],index_col=[0])
 
+# Import depth data - raw and dip adjusted
+raw_depth = pd.read_csv(path_to_data+'discrete_sampledepths.csv',header=[0],index_col=[0])
+dip_depth = pd.read_csv(path_to_data+'dip_adjusted_depths.csv',header=[0],index_col=[0])
+
 #%% Remove depth columns
 dfs = [iso,IC,ICPMS,stats]
 for i in range(len(dfs)):
@@ -44,6 +48,11 @@ for i in range(len(dfs)):
 
 #%% Make master
 
-master = pd.concat(dfs, axis=1)
+samples = pd.concat(dfs, axis=1)
+
+master = pd.concat([raw_depth,dip_depth,samples],axis=1)
 
 master.to_csv(path_to_data+'master_samples.csv')
+
+
+
