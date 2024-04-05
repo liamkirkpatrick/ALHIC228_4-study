@@ -26,10 +26,12 @@ import matplotlib
 from matplotlib.patches import Rectangle
 import os
 import moviepy.video.io.ImageSequenceClip
+import copy
+import re
 
 
 # import Functions
-sys.path.append('../../../core_scripts')
+sys.path.append('../../../data/core_scripts')
 from ecmclass import ecmdata
 
 
@@ -53,77 +55,27 @@ fudge = 0.034
 #%% Housekeeping
 
 # set file paths
-path_to_save = '../../figures/alhic228_4/iso_animation'
-path_to_save_IC = '../../figures/alhic228_4/ic_animation'
-path_to_numpy = '../../numpy_files'
-path_to_dust = '../../coulter_counter/'
-path_to_IC = '../../IC/'
-
+path_to_data = '../data/'
+path_to_figures = '../../figures/'
 
 # Import Color Maps
 cmap1 = plt.cm.Paired
 
-#%% 1 - import ECM data
+#%% import Data
 
-left_file = "cmc1-228_4-L_AC_2023-06-16-13-24.npy"
-right_file = "cmc1-228_4-R_AC_2023-06-16-11-00.npy"
-top_file = "cmc1-228-4_AC_2023-06-15-15-10.npy"
-core_name = "CMC1-228_4-AC"
+#Import ECM
+data = ecmdata(path_to_data+'ECM/cmc1-228-4_AC_2023-06-15-15-10.npy',10)
 
-print("********************************************")
-print("Running file "+core_name+" with:\n"+
-      "Left File: "+left_file+"\n"+
-      "Right File: "+right_file+"\n"+
-      "Top File: "+top_file)
-print("********************************************")
+# Import Sample data
+master = pd.read_csv(path_to_data+'master_samples.csv',header=[0],index_col=[0])
 
-
-# read in data
-left = ecmdata(path_to_numpy+'/'+left_file,41)
-right = ecmdata(path_to_numpy+'/'+right_file,41)
-top = ecmdata(path_to_numpy+'/'+top_file,41)
-
-#%%  2 - import Water Isotope Data
-
-# remove 9th point from Left side - this datapoint is bad
-left_wateriso = left_wateriso.drop([8])
-
-#%%  2 - import Dust Data
-
-# Import raw data
-stats = pd.read_csv(path_to_dust+'stats_df.csv',header=[0],index_col=[0])
-depths = pd.read_csv(path_to_dust+'dust_depths.csv',header=[0],index_col=[0])
-volume = pd.read_csv(path_to_dust+'volume_df.csv',header=[0],index_col=[0])
-
-# seperate dataframe into left and right
-left_depth = depths[depths.index.str.contains('L')]
-right_depth = depths[depths.index.str.contains('R')]
-left_stats = stats[stats.index.str.contains('L')]
-right_stats = stats[stats.index.str.contains('R')]
-left_volume = volume[volume.index.str.contains('L')]
-right_volume = volume[volume.index.str.contains('R')]
-
-#%%  2 - import IC Data
-
-# Import raw data
-IC = pd.read_csv(path_to_IC+'IC_firstpass.csv',header=[0],index_col=[0])
-
-# seperate dataframe into left and right
-left_IC = IC[IC.index.str.contains('L')]
-right_IC = IC[(IC).index.str.contains('R')]
-
-#%% Input angles
-
-top_angle = -34.763772174963109
-side_angle = (14.432+14.9028)/2
-
-
-
+# Import angles
+angles = pd.read_csv(path_to_data+'ECM/dip_angle.csv')
+top_angle = -angles['Top Angle'].to_numpy().item()
+side_angle = angles['Side Angle'].to_numpy().item()
+#side_angle = 0
 
 #%% Setup for plot
-
-#  Compute angle
-data = top
 
 # to start, let's assign some variables
 y_vec = data.y_vec
@@ -131,7 +83,6 @@ depth = data.depth_smooth
 meas = data.meas_smooth
 y_smooth = data.y_smooth
 button_smooth = data.button_smooth
-
 
 # set up colors
 pltmin = 1.3*10**(-8)
@@ -143,6 +94,11 @@ rescale = lambda k: (k-pltmin) /  (pltmax-pltmin)
 # find y middle
 middle = (max(y_vec)-min(y_vec))/2
 
+# Get list of things we want to plot
+excluded_words = ['Note', 'depth', 'center']
+samps_to_plot = [col for col in master.columns if not any(ex_word in col for ex_word in excluded_words)]
+samps_labels = ['dust' + col +'µm' if 'Vol' in col else col for col in samps_to_plot]
+
 #%% define plot box function
 
 def plotsamps(top,bot,l,r,ax,label,c):
@@ -153,212 +109,191 @@ def plotsamps(top,bot,l,r,ax,label,c):
         ax.plot([r,r],[top[i],bot[i]],color=c,linewidth=1)
         ax.plot([l,r],[bot[i],bot[i]],color=c,linewidth=1)
 
-
-#%% Water Isotope Plot
-
-if True:
-    
+def plotsamps(df,ax,sticks):
 
         
+    for index, row in df.iterrows():
+        
+        prefix_index = next((i for i, prefix in enumerate(sticks) if index.startswith(prefix)), None)
+        
+        color = cmap1(prefix_index*2+7)
+        
+        # list all boxes
+        TL = row['TL_dipadj']
+        TR = row['TR_dipadj']
+        BL = row['BL_dipadj']
+        BR = row['BR_dipadj']
+        l = row['left_fromcenter_mm']
+        r = row['right_fromcenter_mm']
+        
+        ax.plot([l,r],[TL,TR],color=color,linewidth=1)
+        ax.plot([l,l],[TL,BL],color=color,linewidth=1)
+        ax.plot([r,r],[TR,BR],color=color,linewidth=1)
+        ax.plot([l,r],[BL,BR],color=color,linewidth=1)
+
+#%% Make ECM Plot
+
+angle = 0
+print('Plotting ECM Background - angle = '+str(round(angle,2)))
+# Make plot
+ECMfig0,ECMaxs0 = plt.subplots(1,2,dpi=200,figsize=(8,5))
+# Axis 0 lables and  limits
+ECMaxs0[0].set_ylabel('Dip-Adjusted Depth (m)')
+ECMaxs0[0].set_xlabel('Distance Accross Core (mm)')
+ECMaxs0[0].set_ylim([155.4,155.0])
+ECMaxs0[0].set_xlim([130,-130])
+# Axis 1 lables and  limits
+ECMaxs0[1].set_ylabel('Dip-Adjusted Depth (m)')
+ECMaxs0[1].set_ylim([155.4,155.0])
+ECMaxs0[1].yaxis.tick_right()
+ECMaxs0[1].yaxis.set_label_position("right")
+
+# Subplot #1 
+for j in range(len(y_vec)):
+
+    measy = meas[y_smooth==y_vec[j]]
+    depthy = depth[y_smooth==y_vec[j]]
+
+    depth_adj = depthy - np.sin(-angle*np.pi/180) * (y_vec[j]-middle)/1000
+
+
+    for i in range(len(measy)-1):
     
-    test_angle = np.linspace(0,top_angle,100)
-    #k = 0
+        ECMaxs0[0].add_patch(Rectangle((y_vec[j]-4.8-middle,depth_adj[i]),9.6,depth_adj[i+1]-depth_adj[i],facecolor=my_cmap(rescale(measy[i]))))
+
+
+angle = top_angle
+print('Plotting ECM Background - angle ='+str(round(angle,2)))
+# Make plot
+ECMfig1,ECMaxs1 = plt.subplots(1,2,dpi=200,figsize=(8,5))
+# Axis 0 lables and  limits
+ECMaxs1[0].set_ylabel('Dip-Adjusted Depth (m)')
+ECMaxs1[0].set_xlabel('Distance Accross Core (mm)')
+ECMaxs1[0].set_ylim([155.4,155.0])
+ECMaxs1[0].set_xlim([130,-130])
+# Axis 1 lables and  limits
+ECMaxs1[1].set_ylabel('Dip-Adjusted Depth (m)')
+ECMaxs1[1].set_ylim([155.4,155.0])
+ECMaxs1[1].yaxis.tick_right()
+ECMaxs1[1].yaxis.set_label_position("right")
+
+# Subplot #1 
+for j in range(len(y_vec)):
+
+    measy = meas[y_smooth==y_vec[j]]
+    depthy = depth[y_smooth==y_vec[j]]
+
+    depth_adj = depthy - np.sin(-angle*np.pi/180) * (y_vec[j]-middle)/1000
+
+
+    for i in range(len(measy)-1):
     
-    for k in range(len(test_angle)):
+        ECMaxs1[0].add_patch(Rectangle((y_vec[j]-4.8-middle,depth_adj[i]),9.6,depth_adj[i+1]-depth_adj[i],facecolor=my_cmap(rescale(measy[i]))))
+
+
+
+#%% loop though all elements
+
+for col in samps_to_plot:
     
-        print("Plotting Angle "+str(test_angle[k]))
+    print('Plotting '+col)
+    
+    # select appropriate data
+    selected_columns = ['rawdepth_top_m','rawdepth_bottom_m',
+                        'left_fromcenter_mm','right_fromcenter_mm',
+                        'top_fromcenter_mm','bot_fromcenter_mm',col]
+
+
+
+    
+    for (angle,ECMfig) in zip([0, top_angle],[ECMfig0,ECMfig1]):
         
+        df = master[selected_columns].dropna()
+        ave_intopage = (df['top_fromcenter_mm']+df['bot_fromcenter_mm'])/2
+        ave_crosspage = (df['left_fromcenter_mm']+df['right_fromcenter_mm'])/2
         
-        angle = test_angle[k]
+        # get unqiue sticks
+        sticks = [re.sub(r'\d+', '', s) for s in df.index.tolist()]
+        sticks = list(set(sticks))
         
-        fig,axs = plt.subplots(1,2,dpi=200,figsize=(8,5))
+        print("     Angle "+str(round(angle,2)))
         
+        # compute adjusted dips (all four corners)
+        df['TL_dipadj'] = (df['rawdepth_top_m'] 
+                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                           + df['left_fromcenter_mm']/1000 
+                           * np.sin(angle*np.pi/180))
+        df['TR_dipadj'] = (df['rawdepth_top_m'] 
+                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                           + df['right_fromcenter_mm']/1000 
+                           * np.sin(angle*np.pi/180))
+        df['BL_dipadj'] = (df['rawdepth_bottom_m'] 
+                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                           + df['left_fromcenter_mm']/1000 
+                           * np.sin(angle*np.pi/180))
+        df['BR_dipadj'] = (df['rawdepth_bottom_m'] 
+                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                           + df['right_fromcenter_mm']/1000 
+                           * np.sin(angle*np.pi/180))
+        df['topdepth_dipadj'] = (df['rawdepth_top_m'] 
+                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                           + ave_crosspage/1000 * np.sin(angle*np.pi/180))
+        df['botdepth_dipadj'] = (df['rawdepth_bottom_m'] 
+                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                           + ave_crosspage/1000 * np.sin(angle*np.pi/180))
+
         
-        # Axis lables and  limits
-        axs[0].set_ylabel('Dip-Adjusted Depth (m)')
-        axs[0].set_xlabel('Distance Accross Core (mm)')
-        axs[0].set_ylim([155.4,155.0])
-        axs[0].set_xlim([130,-130])
-        
-        
+        # Make plot
+        fig = copy.deepcopy(ECMfig)
+        axs = fig.axes  # Get the copy of the axes
         axs[1].set_ylabel('Dip-Adjusted Depth (m)')
-        axs[1].set_xlabel('$\delta_{18}O$ (‰)')
-        axs[1].set_ylim([155.4,155.0])
-        axs[1].yaxis.tick_right()
-        axs[1].yaxis.set_label_position("right")
         
-        
-        
-        # Subplot #1 
-        for j in range(len(y_vec)):
+        # left pannel
+        idxcnt = 0
+        unique_indexes = df.index.unique()
+        for idx in unique_indexes:
+            df_subset = df[df.index.to_series().str.contains(idx)]
+            plotsamps(df_subset,axs[0],sticks)
             
-            measy = meas[y_smooth==y_vec[j]]
-            depthy = depth[y_smooth==y_vec[j]]
+            idxcnt+=1
             
-            depth_adj = depthy - np.sin(angle*np.pi/180) * (y_vec[j]-middle)/1000
-        
+        # right pannel
+        for index, row in df.iterrows():
             
-            for i in range(len(measy)-1):
-                
-                axs[0].add_patch(Rectangle((y_vec[j]-4.8-middle,depth_adj[i]),9.6,depth_adj[i+1]-depth_adj[i],facecolor=my_cmap(rescale(measy[i]))))
-        
-        
-        # Subplot #1
-        # Now working out shifts for water isotopes
-        BID_width = 241 #mm
-        h20_top_shift = (BID_width-5)/2  * math.tan(side_angle * -1 * (2*math.pi/360)) / 1000
-        h20_left_shift = -115  * math.tan(angle  * (2*math.pi/360)) / 1000
-        h20_right_shift = 110  * math.tan(angle * (2*math.pi/360)) / 1000
-        h20_shift = [h20_left_shift, h20_right_shift, h20_top_shift]
-        
-        fcnt = 0 
-        labels = ["Left","Right","Center"]
-        for f in [left_wateriso, right_wateriso, center_wateriso]:
+            prefix_index = next((i for i, prefix in enumerate(sticks) if index.startswith(prefix)), None)
             
-            shift = h20_shift[fcnt]
             
-            axs[1].plot(f['d18O'],f['mid_depth']+shift,"-o",color=cmap1(fcnt*2+7), label = labels[fcnt]+" - Water Isotope")
-        
-        
-            fcnt+=1
-        
-        plotsamps(np.array(RISO_top)+h20_shift[1],
-                  np.array(RISO_bottom)+h20_shift[1],
-                  RISO_left,RISO_right,axs[0],'RISO_',cmap1(1*2+7))
-        plotsamps(np.array(LISO_top)+h20_shift[0],
-                  np.array(LISO_bottom)+h20_shift[0],
-                  LISO_left,LISO_right,axs[0],'LISO_',cmap1(0*2+7))
-        plotsamps(CISO_top+h20_shift[2],
-                  CISO_bottom+h20_shift[2],
-                  CISO_left,CISO_right,axs[0],'CISO_',cmap1(2*2+7))
-        
-        
-        
-        # bookkeeping
+            color = cmap1(prefix_index*2+7)
+            
+            axs[1].plot([row[col],row[col]],
+                        [row['topdepth_dipadj'],row['botdepth_dipadj']],
+                        color=color)
+        cnt = 0
+        for s in sticks:
+            index = list(df.index)
+            df_subset = df[df.index.to_series().str.contains(s)]
+            axs[1].plot(df_subset[col],(df_subset['topdepth_dipadj']+df_subset['botdepth_dipadj'])/2,'-',color=cmap1(cnt*2+7))
+            cnt+=1
+         
+        # plot housekeeping
+        axs[1].set_ylabel(col)
         axs[0].grid()
         axs[1].grid()
-        # bookkeeping
-        fig.suptitle('Dip Angle: %.2f degrees'% angle, fontsize=14)
-        fig.tight_layout()
-        fig.savefig(path_to_save+'/animation_'+str(round(angle,2))+'.png')
+        plt.subplots_adjust(wspace = 0)
         
+        # save and close
+        if angle==0:
+            folder = 'samples_unshifted/'
+        else:
+            folder = 'samples_shifted/'
+        fig.savefig(path_to_figures+folder+col+'_'+str(round(angle,2))+'.png')
         plt.close(fig)
         
-    #%% Make annimation
-    
-    
-    fps=10
-    
-    
-    
-    image_names = []
-    for n in test_angle:
-        image_names.append('animation_'+str(round(n,2))+'.png')
+       
         
-    # allfiles = os.listdir(path_to_save)
-    # image_names = [ fname for fname in allfiles if fname.endswith('.png')]
-    
-    image_files = [os.path.join(path_to_save,img)
-                   for img in image_names]
-    clip = moviepy.video.io.ImageSequenceClip.ImageSequenceClip(image_files, fps=fps)
-    clip.write_videofile(path_to_save+'/iso_movie.mp4')
 
 
 
 
 
-#%% Now do IC
-############################################################################################
-
-test_angle = [0,top_angle]
-#k = 0
-
-
-ions = ['Cl','NO3','SO4','Na','K','Mg','Ca']
-ions_name = ['Cl$^-$','NO$_3^-$','SO$_4^{2+}$','Na$^+$','K$^{+}$','Mg$^{2+}$','Ca$^{2+}$']
-for ion,ion_name in zip(ions,ions_name):
-    
-    print("Running "+ion_name)
-
-    for k in range(len(test_angle)):
-    
-        print("Plotting Angle "+str(test_angle[k]))
-        
-        
-        angle = test_angle[k]
-        
-        fig,axs = plt.subplots(1,2,dpi=200,figsize=(8,5))
-        
-        
-        
-        
-        # Axis lables and  limits
-        axs[0].set_ylabel('Dip-Adjusted Depth (m)')
-        axs[0].set_xlabel('Distance Accross Core (mm)')
-        axs[0].set_ylim([155.4,155.0])
-        axs[0].set_xlim([130,-130])
-        
-        
-        axs[1].set_ylabel('Dip-Adjusted Depth (m)')
-        axs[1].set_xlabel(ion_name+' Concentration (ppb)')
-        axs[1].set_ylim([155.4,155.0])
-        axs[1].yaxis.tick_right()
-        axs[1].yaxis.set_label_position("right")
-
-        
-        
-        
-        # Subplot 0
-        for j in range(len(y_vec)):
-            
-            measy = meas[y_smooth==y_vec[j]]
-            depthy = depth[y_smooth==y_vec[j]]
-            
-            depth_adj = depthy - np.sin(angle*np.pi/180) * (y_vec[j]-middle)/1000
-        
-            
-            for i in range(len(measy)-1):
-                
-                axs[0].add_patch(Rectangle((y_vec[j]-4.8-middle,depth_adj[i]),9.6,depth_adj[i+1]-depth_adj[i],facecolor=my_cmap(rescale(measy[i]))))
-        
-        
-        # Subplot #1
-        # Now working out shifts for water isotopes
-        BID_width = 241 #mm
-        dust_left_shift = -95  * math.tan(angle  * (2*math.pi/360)) / 1000
-        dust_right_shift = 65  * math.tan(angle * (2*math.pi/360)) / 1000
-        dust_shift = [dust_left_shift, dust_right_shift]
-        
-        
-        
-        fcnt = 0 
-        labels = ["Left","Right"]
-        ic_list = [left_IC,right_IC]
-        for ic in ic_list:
-            
-            
-            shift = dust_shift[fcnt]
-            
-            axs[1].plot(ic[ion],ic['Mid Depth']+shift,"-o",color=cmap1(fcnt*2+7))
-        
-        
-            fcnt+=1
-        
-        # Subplot 9 - boxes
-        plotsamps(np.array(RIC_top)+dust_shift[1],
-                  np.array(RIC_bottom)+dust_shift[1],
-                  RIC_left,RIC_right,axs[0],'RIC_',cmap1(1*2+7))
-        plotsamps(np.array(L_top)+dust_shift[0],
-                  np.array(L_bottom)+dust_shift[0],
-                  L_left,L_right,axs[0],'LIC_',cmap1(0*2+7))
-    
-        
-        
-        # bookkeeping
-        axs[0].grid()
-        axs[1].grid()
-        # bookkeeping
-        fig.suptitle('Dip Angle: %.2f degrees'% angle, fontsize=14)
-        fig.tight_layout()
-        fig.savefig(path_to_save_IC+'/'+ion+'_animation_'+str(round(angle,2))+'.png')
         
