@@ -41,17 +41,13 @@ window=1
 
 # Cross Correlation Parameters
 
-anglespace = .05         # spacing between degrees
-comp_range = 0.15       # distance over which to complete correlation comparison
+anglespace = .01         # spacing between degrees
+comp_range = 0.20       # distance over which to complete correlation comparison
 comp_int = 0.01         # depth interval to complete correlation comparison
 interp_int = 0.00025    # spacing of line that we interpolate onto
 pad_offset = 1          # padding from edge, mm
 
-#FUDGE FOR LEFT/RIGHT
-# TEMPORARY - AJDUSTS L/R ECM to match top
-# NEED TO ACTUALLY QUANTIFY WHERE THIS ERROR IS COMING FROM
-fudge = 0.034
- 
+
 #%% Housekeeping
 
 # set file paths
@@ -86,9 +82,9 @@ print("********************************************")
 
 
 # read in data
-left = ecmdata(path_to_data+left_file,41)
-right = ecmdata(path_to_data+right_file,41)
-top = ecmdata(path_to_data+top_file,41)
+left = ecmdata(path_to_data+left_file,1)
+right = ecmdata(path_to_data+right_file,1)
+top = ecmdata(path_to_data+top_file,1)
 
 
 #%%  4 - Calculate dip angle on all faces
@@ -199,8 +195,8 @@ def find_angle(data,anglemin,anglemax):
 
 # Run Function to adjust by level
 top_angle = find_angle(top,-45,-25)
-left_angle = find_angle(left,0,30)
-right_angle = find_angle(right,-30,0)
+left_angle = find_angle(left,5,25)
+right_angle = find_angle(right,-25,-5)
 side_angle = (left_angle*-1+right_angle)/2   # average of left and right
 
 df = pd.DataFrame({'Top Angle': [top_angle],'Side Angle':[side_angle]})

@@ -104,11 +104,6 @@ def plotsamps(df,ax,label):
     BR = df['botadj'].to_numpy()
     l = df['left_fromcenter_mm'].to_numpy()
     r = df['right_fromcenter_mm'].to_numpy()
-    
-    print('TL = '+str(TL))
-    print('BL = '+str(BL))
-    print('l = '+str(l))
-    print('r = '+str(r))
 
     # plot each box
     for i in range(len(TL)):
