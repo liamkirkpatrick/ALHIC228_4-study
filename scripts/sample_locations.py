@@ -51,8 +51,8 @@ df = pd.read_csv(path_to_data+'discrete_sampledepths.csv')
 
 # adjust depth for into/pout of page
 ave_intopage = (df['top_fromcenter_mm']+df['bot_fromcenter_mm'])/2
-df['topadj'] = df['rawdepth_top_m'] + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
-df['botadj'] = df['rawdepth_bottom_m'] + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+df['topadj'] = df['rawdepth_top_m'] + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
+df['botadj'] = df['rawdepth_bottom_m'] + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
 
 
 #%% smooth data

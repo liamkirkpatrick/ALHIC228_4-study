@@ -42,7 +42,7 @@ window=1
 # Cross Correlation Parameters
 
 anglespace = .01         # spacing between degrees
-comp_range = 0.20       # distance over which to complete correlation comparison
+comp_range = 0.25       # distance over which to complete correlation comparison
 comp_int = 0.01         # depth interval to complete correlation comparison
 interp_int = 0.00025    # spacing of line that we interpolate onto
 pad_offset = 1          # padding from edge, mm

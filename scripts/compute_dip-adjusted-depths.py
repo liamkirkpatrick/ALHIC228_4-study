@@ -29,14 +29,14 @@ ave_crosspage = (df['left_fromcenter_mm']+df['right_fromcenter_mm'])/2
 adj = pd.DataFrame()
 adj['ID'] = df['ID']
 adj['topdepth_dipadj'] = (df['rawdepth_top_m'] 
-                   + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
-                   + ave_crosspage/1000 * np.sin(top_angle*np.pi/180))
+                   + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
+                   + ave_crosspage/1000 * np.tan(top_angle*np.pi/180))
 adj['middepth_dipadj'] = ((df['rawdepth_top_m']+df['rawdepth_bottom_m'])/2
-                   + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
-                   + ave_crosspage/1000 * np.sin(top_angle*np.pi/180))
+                   + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
+                   + ave_crosspage/1000 * np.tan(top_angle*np.pi/180))
 adj['botdepth_dipadj'] = (df['rawdepth_bottom_m'] 
-                   + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
-                   + ave_crosspage/1000 * np.sin(top_angle*np.pi/180))
+                   + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
+                   + ave_crosspage/1000 * np.tan(top_angle*np.pi/180))
 
 #%% Save adjusted depths
 

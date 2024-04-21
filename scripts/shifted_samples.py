@@ -65,7 +65,7 @@ cmap1 = plt.cm.Paired
 
 # toggleon/off
 iso_mov = True
-plotall = False
+plotall = True
 
 #Import ECM
 data = ecmdata(path_to_data+'ECM/cmc1-228-4_AC_2023-06-15-15-10.npy',10)
@@ -239,7 +239,7 @@ if plotall:
         measy = meas[y_smooth==y_vec[j]]
         depthy = depth[y_smooth==y_vec[j]]
     
-        depth_adj = depthy - np.sin(-angle*np.pi/180) * (y_vec[j]-middle)/1000
+        depth_adj = depthy - np.tan(-angle*np.pi/180) * (y_vec[j]-middle)/1000
     
     
         for i in range(len(measy)-1):
@@ -268,7 +268,7 @@ if plotall:
         measy = meas[y_smooth==y_vec[j]]
         depthy = depth[y_smooth==y_vec[j]]
     
-        depth_adj = depthy - np.sin(-angle*np.pi/180) * (y_vec[j]-middle)/1000
+        depth_adj = depthy - np.tan(-angle*np.pi/180) * (y_vec[j]-middle)/1000
     
     
         for i in range(len(measy)-1):
@@ -307,27 +307,27 @@ if plotall:
             
             # compute adjusted dips (all four corners)
             df['TL_dipadj'] = (df['rawdepth_top_m'] 
-                               + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                               + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
                                + df['left_fromcenter_mm']/1000 
-                               * np.sin(angle*np.pi/180))
+                               * np.tan(angle*np.pi/180))
             df['TR_dipadj'] = (df['rawdepth_top_m'] 
-                               + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                               + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
                                + df['right_fromcenter_mm']/1000 
-                               * np.sin(angle*np.pi/180))
+                               * np.tan(angle*np.pi/180))
             df['BL_dipadj'] = (df['rawdepth_bottom_m'] 
-                               + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                               + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
                                + df['left_fromcenter_mm']/1000 
-                               * np.sin(angle*np.pi/180))
+                               * np.tan(angle*np.pi/180))
             df['BR_dipadj'] = (df['rawdepth_bottom_m'] 
-                               + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                               + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
                                + df['right_fromcenter_mm']/1000 
-                               * np.sin(angle*np.pi/180))
+                               * np.tan(angle*np.pi/180))
             df['topdepth_dipadj'] = (df['rawdepth_top_m'] 
-                               + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
-                               + ave_crosspage/1000 * np.sin(angle*np.pi/180))
+                               + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
+                               + ave_crosspage/1000 * np.tan(angle*np.pi/180))
             df['botdepth_dipadj'] = (df['rawdepth_bottom_m'] 
-                               + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
-                               + ave_crosspage/1000 * np.sin(angle*np.pi/180))
+                               + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
+                               + ave_crosspage/1000 * np.tan(angle*np.pi/180))
     
             
             # Make plot
@@ -427,27 +427,27 @@ if iso_mov:
         
         # compute adjusted dips (all four corners)
         df['TL_dipadj'] = (df['rawdepth_top_m'] 
-                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                           + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
                            + df['left_fromcenter_mm']/1000 
-                           * np.sin(angle*np.pi/180))
+                           * np.tan(angle*np.pi/180))
         df['TR_dipadj'] = (df['rawdepth_top_m'] 
-                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                           + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
                            + df['right_fromcenter_mm']/1000 
-                           * np.sin(angle*np.pi/180))
+                           * np.tan(angle*np.pi/180))
         df['BL_dipadj'] = (df['rawdepth_bottom_m'] 
-                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                           + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
                            + df['left_fromcenter_mm']/1000 
-                           * np.sin(angle*np.pi/180))
+                           * np.tan(angle*np.pi/180))
         df['BR_dipadj'] = (df['rawdepth_bottom_m'] 
-                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
+                           + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
                            + df['right_fromcenter_mm']/1000 
-                           * np.sin(angle*np.pi/180))
+                           * np.tan(angle*np.pi/180))
         df['topdepth_dipadj'] = (df['rawdepth_top_m'] 
-                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
-                           + ave_crosspage/1000 * np.sin(angle*np.pi/180))
+                           + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
+                           + ave_crosspage/1000 * np.tan(angle*np.pi/180))
         df['botdepth_dipadj'] = (df['rawdepth_bottom_m'] 
-                           + ave_intopage/1000 * np.sin(side_angle*np.pi/180)
-                           + ave_crosspage/1000 * np.sin(angle*np.pi/180))
+                           + ave_intopage/1000 * np.tan(side_angle*np.pi/180)
+                           + ave_crosspage/1000 * np.tan(angle*np.pi/180))
 
         
         # Make plot
@@ -469,7 +469,7 @@ if iso_mov:
         for j in range(len(y_vec)):
             measy = meas[y_smooth==y_vec[j]]
             depthy = depth[y_smooth==y_vec[j]]
-            depth_adj = depthy - np.sin(-angle*np.pi/180) * (y_vec[j]-middle)/1000
+            depth_adj = depthy - np.tan(-angle*np.pi/180) * (y_vec[j]-middle)/1000
             for i in range(len(measy)-1):
                 axs[0,0].add_patch(Rectangle((y_vec[j]-4.8-middle,depth_adj[i]),9.6,depth_adj[i+1]-depth_adj[i],facecolor=my_cmap(rescale(measy[i]))))
         
@@ -534,14 +534,14 @@ if iso_mov:
     fps=10
     image_names = []
     for n in test_angles:
-        image_names.append('animation_'+str(round(n,2))+'.png')
+        image_names.append(col+'_'+str(round(n,2))+'.png')
         
 
     
     image_files = [os.path.join(path_to_isoannimation,img)
                    for img in image_names]
     clip = moviepy.video.io.ImageSequenceClip.ImageSequenceClip(image_files, fps=fps)
-    clip.write_videofile(path_to_isoannimation+'/iso_movie.mp4')
+    clip.write_videofile(path_to_isoannimation+'/iso_movie_d18O.mp4')
         
 
 
