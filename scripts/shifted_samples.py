@@ -64,7 +64,7 @@ cmap1 = plt.cm.Paired
 #%% import Data
 
 # toggleon/off
-iso_mov = True
+iso_mov = False
 plotall = True
 
 #Import ECM
@@ -104,6 +104,9 @@ excluded_words = ['Note', 'depth', 'center']
 samps_to_plot = [col for col in master.columns if not any(ex_word in col for ex_word in excluded_words)]
 samps_labels = ['dust' + col +'µm' if 'Vol' in col else col for col in samps_to_plot]
 
+
+# samps_to_plot
+samps_to_plot = ['CO2']
 
 # clean up labels
 label_dict = {'dD':'$\delta$D (‰)',
@@ -178,8 +181,8 @@ label_dict = {'dD':'$\delta$D (‰)',
    'Vol <10': 'Dust Volume Count <10µm',
    'Vol ratio <10': 'Dust Count Radio <10µm', 
    'Vol <12': 'Dust Volume Count <12µm',
-   'Mode Particle Size (µm)':'Mode Particle Size (µm)'}
-
+   'Mode Particle Size (µm)':'Mode Particle Size (µm)',
+   'CO2':'CO2 (ppm)'}
 
 
 #%% define plot box function
@@ -341,11 +344,13 @@ if plotall:
             unique_indexes = df.index.unique()
             for idx in unique_indexes:
                 df_subset = df[df.index.to_series().str.contains(idx)]
+                #df_subset = df[df.index.to_series() == idx]
                 plotsamps(df_subset,axs[0],sticks)
                 
                 idxcnt+=1
                 
             # right pannel
+            #prefix_index = 0
             for index, row in df.iterrows():
                 
                 prefix_index = next((i for i, prefix in enumerate(sticks) if index.startswith(prefix)), None)
@@ -360,6 +365,7 @@ if plotall:
             for s in sticks:
                 index = list(df.index)
                 df_subset = df[df.index.to_series().str.contains(s)]
+                #df_subset = df[df.index.to_series() == s]
                 axs[1].plot(df_subset[col],(df_subset['topdepth_dipadj']+df_subset['botdepth_dipadj'])/2,'-',color=cmap1(cnt*2+7))
                 cnt+=1
              

@@ -29,19 +29,21 @@ depths = pd.read_csv(path_to_data+'coulter/dust_depths.csv',header=[0],index_col
 volume = pd.read_csv(path_to_data+'coulter/volume_df.csv',header=[0],index_col=[0])
 
 
-
 # Import IC data
 IC = pd.read_csv(path_to_data+'IC/IC_firstpass.csv',header=[0],index_col=[0])
 
 # Import ICMPS data
 ICPMS = pd.read_csv(path_to_data+'ICPMS/ICPMS.csv',header=[0],index_col=[0])
 
+# Import CO2 Data
+CO2 = pd.read_csv(path_to_data+'gas/CO2.csv',header=[0],index_col=[0])
+
 # Import depth data - raw and dip adjusted
 raw_depth = pd.read_csv(path_to_data+'discrete_sampledepths.csv',header=[0],index_col=[0])
 dip_depth = pd.read_csv(path_to_data+'dip_adjusted_depths.csv',header=[0],index_col=[0])
 
 #%% Remove depth columns
-dfs = [iso,IC,ICPMS,stats]
+dfs = [iso,IC,ICPMS,stats,CO2]
 for i in range(len(dfs)):
     dfs[i] = dfs[i].drop(columns = [col for col in dfs[i].columns if 'depth' in col])
     dfs[i] = dfs[i].drop(columns = [col for col in dfs[i].columns if 'Depth' in col])
