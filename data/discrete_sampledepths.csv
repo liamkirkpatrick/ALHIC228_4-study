@@ -107,3 +107,15 @@ LCO26,placeholder CO2,155.1825,155.2025,75,40,30,0
 LCO27,placeholder CO2,155.2025,155.2225,75,40,30,0
 LCO28,placeholder CO2,155.2225,155.2575,75,40,30,0
 LCO29,placeholder CO2,155.2575,155.2775,75,40,30,0
+LCO210,placeholder CO2,155.2775,155.2975,75,40,30,0
+LCO211,placeholder CO2,155.2975,155.3175,75,40,30,0
+LCO312,placeholder CO2,155.3175,155.33,75,40,30,0
+RCH41,placeholder methane,155.0725,155.1,0,-50,30,0
+RCH42,placeholder methane,155.1,155.125,0,-50,30,0
+RCH43,placeholder methane,155.125,155.15,0,-50,30,0
+RCH44,placeholder methane,155.15,155.175,0,-50,30,0
+RCH45,placeholder methane,155.175,155.2,0,-50,30,0
+RCH46,placeholder methane,155.2,155.2275,0,-50,30,0
+RCH47,placeholder methane,155.2275,155.27,0,-50,30,0
+RCH48,placeholder methane,155.27,155.295,0,-50,30,0
+RCH49,placeholder methane,155.295,155.32,0,-50,30,0
