@@ -106,7 +106,7 @@ samps_labels = ['dust' + col +'µm' if 'Vol' in col else col for col in samps_to
 
 
 # samps_to_plot
-samps_to_plot = ['CO2']
+samps_to_plot = ['CO2','CH4']
 
 # clean up labels
 label_dict = {'dD':'$\delta$D (‰)',
@@ -182,7 +182,7 @@ label_dict = {'dD':'$\delta$D (‰)',
    'Vol ratio <10': 'Dust Count Radio <10µm', 
    'Vol <12': 'Dust Volume Count <12µm',
    'Mode Particle Size (µm)':'Mode Particle Size (µm)',
-   'CO2':'CO2 (ppm)'}
+   'CO2':'CO2 (ppm)','CH4':'CH4 (ppm)'}
 
 
 #%% define plot box function
